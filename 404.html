@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - الصفحة غير موجودة | أنس أبو زهرة</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .error-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .error-content {
+            max-width: 600px;
+        }
+        
+        .error-number {
+            font-size: 8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--warning-color);
+        }
+        
+        .error-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .error-message {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .error-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .error-btn {
+            background: var(--warning-color);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .error-btn:hover {
+            background: #E67E22;
+            transform: translateY(-3px);
+        }
+        
+        .error-btn.secondary {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .error-btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .error-number {
+                font-size: 6rem;
+            }
+            
+            .error-title {
+                font-size: 1.5rem;
+            }
+            
+            .error-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-page">
+        <div class="error-content">
+            <div class="error-number">404</div>
+            <h1 class="error-title">عذراً، الصفحة غير موجودة</h1>
+            <p class="error-message">
+                يبدو أن الصفحة التي تبحث عنها غير موجودة أو تم نقلها إلى مكان آخر.
+                يمكنك العودة إلى الصفحة الرئيسية أو تصفح الدورات التعليمية.
+            </p>
+            <div class="error-actions">
+                <a href="/" class="error-btn">
+                    <i class="fas fa-home"></i>
+                    الصفحة الرئيسية
+                </a>
+                <a href="/#courses" class="error-btn secondary">
+                    <i class="fas fa-graduation-cap"></i>
+                    الدورات التعليمية
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Add some interactive elements
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add typing effect to error message
+            const errorMessage = document.querySelector('.error-message');
+            const text = errorMessage.textContent;
+            errorMessage.textContent = '';
+            
+            let i = 0;
+            const typeWriter = () => {
+                if (i < text.length) {
+                    errorMessage.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(typeWriter, 50);
+                }
+            };
+            
+            setTimeout(typeWriter, 1000);
+            
+            // Add floating animation to error number
+            const errorNumber = document.querySelector('.error-number');
+            errorNumber.style.animation = 'float 3s ease-in-out infinite';
+            
+            // Add CSS for floating animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes float {
+                    0%, 100% { transform: translateY(0px); }
+                    50% { transform: translateY(-20px); }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html> 

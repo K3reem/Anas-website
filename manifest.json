@@ -1,0 +1,21 @@
+{
+    "name": "أنس أبو زهرة - تعليم الرياضيات",
+    "short_name": "أنس أبو زهرة",
+    "description": "منصة تعليمية لتعلم الرياضيات والكالكولاس",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#6366f1",
+    "icons": [
+        {
+            "src": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=192&h=192&fit=crop",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=512&h=512&fit=crop",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+} 

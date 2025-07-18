@@ -1,0 +1,45 @@
+{
+  "name": "anas-math-website",
+  "version": "1.0.0",
+  "description": "موقع تعليمي متكامل لمعلم الرياضيات أنس أبو زهرة مع بوت ذكاء اصطناعي مدمج",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "serve": "npx serve .",
+    "dev": "live-server --port=8000",
+    "build": "echo 'No build process needed for static site'",
+    "test": "echo 'No tests specified'"
+  },
+  "keywords": [
+    "math",
+    "calculus",
+    "education",
+    "ai",
+    "chatbot",
+    "arabic",
+    "mathematics",
+    "learning"
+  ],
+  "author": "أنس أبو زهرة",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/anas-math-website.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/anas-math-website/issues"
+  },
+  "homepage": "https://your-username.github.io/anas-math-website",
+  "devDependencies": {
+    "live-server": "^1.2.2",
+    "serve": "^14.2.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+} 

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار الموقع | أنس أبو زهرة</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .test-container {
+            max-width: 800px;
+            margin: 100px auto;
+            padding: 2rem;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .test-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+        }
+        
+        .test-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .test-result {
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .test-pass {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .test-fail {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .test-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .test-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            margin: 0.5rem;
+            transition: var(--transition);
+        }
+        
+        .test-btn:hover {
+            background: #357ABD;
+        }
+        
+        .chatbot-test {
+            height: 300px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1><i class="fas fa-vial"></i> اختبار موقع أنس أبو زهرة التعليمي</h1>
+        
+        <div class="test-section">
+            <h3><i class="fas fa-palette"></i> اختبار التصميم</h3>
+            <div id="design-tests"></div>
+            <button class="test-btn" onclick="testDesign()">تشغيل اختبار التصميم</button>
+        </div>
+        
+        <div class="test-section">
+            <h3><i class="fas fa-robot"></i> اختبار البوت الذكي</h3>
+            <div id="chatbot-tests"></div>
+            <button class="test-btn" onclick="testChatbot()">تشغيل اختبار البوت</button>
+            <div class="chatbot-test" id="chatbot-test-area">
+                <div id="chatbot-messages" style="height: 250px; overflow-y: auto; padding: 1rem;"></div>
+                <div style="padding: 1rem; border-top: 1px solid var(--border-color);">
+                    <input type="text" id="test-input" placeholder="اكتب رسالة اختبار..." style="width: 70%; padding: 0.5rem;">
+                    <button onclick="sendTestMessage()" style="width: 25%; padding: 0.5rem;">إرسال</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3><i class="fas fa-language"></i> اختبار اللغات</h3>
+            <div id="language-tests"></div>
+            <button class="test-btn" onclick="testLanguages()">تشغيل اختبار اللغات</button>
+        </div>
+        
+        <div class="test-section">
+            <h3><i class="fas fa-mobile-alt"></i> اختبار التجاوب</h3>
+            <div id="responsive-tests"></div>
+            <button class="test-btn" onclick="testResponsive()">تشغيل اختبار التجاوب</button>
+        </div>
+        
+        <div class="test-section">
+            <h3><i class="fas fa-tachometer-alt"></i> اختبار الأداء</h3>
+            <div id="performance-tests"></div>
+            <button class="test-btn" onclick="testPerformance()">تشغيل اختبار الأداء</button>
+        </div>
+        
+        <div class="test-section">
+            <h3><i class="fas fa-shield-alt"></i> اختبار الأمان</h3>
+            <div id="security-tests"></div>
+            <button class="test-btn" onclick="testSecurity()">تشغيل اختبار الأمان</button>
+        </div>
+        
+        <div class="test-section">
+            <h3><i class="fas fa-play"></i> تشغيل جميع الاختبارات</h3>
+            <button class="test-btn" onclick="runAllTests()" style="background: var(--success-color);">
+                <i class="fas fa-play"></i> تشغيل جميع الاختبارات
+            </button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="ai-chatbot.js"></script>
+    
+    <script>
+        // Test functions
+        function addTestResult(containerId, message, type = 'pass') {
+            const container = document.getElementById(containerId);
+            const result = document.createElement('div');
+            result.className = `test-result test-${type}`;
+            result.innerHTML = `<i class="fas fa-${type === 'pass' ? 'check' : type === 'fail' ? 'times' : 'exclamation-triangle'}"></i> ${message}`;
+            container.appendChild(result);
+        }
+        
+        function clearTestResults(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+        
+        function testDesign() {
+            clearTestResults('design-tests');
+            
+            // Test CSS variables
+            const root = document.documentElement;
+            const computedStyle = getComputedStyle(root);
+            
+            if (computedStyle.getPropertyValue('--primary-color')) {
+                addTestResult('design-tests', 'متغيرات CSS تعمل بشكل صحيح', 'pass');
+            } else {
+                addTestResult('design-tests', 'متغيرات CSS غير موجودة', 'fail');
+            }
+            
+            // Test fonts
+            if (document.fonts.check('1em Cairo')) {
+                addTestResult('design-tests', 'خطوط Cairo محملة بشكل صحيح', 'pass');
+            } else {
+                addTestResult('design-tests', 'خطوط Cairo غير محملة', 'fail');
+            }
+            
+            // Test icons
+            const iconTest = document.createElement('i');
+            iconTest.className = 'fas fa-test';
+            if (getComputedStyle(iconTest, ':before').content !== 'none') {
+                addTestResult('design-tests', 'أيقونات Font Awesome تعمل', 'pass');
+            } else {
+                addTestResult('design-tests', 'أيقونات Font Awesome لا تعمل', 'fail');
+            }
+        }
+        
+        function testChatbot() {
+            clearTestResults('chatbot-tests');
+            
+            // Test AI instance
+            if (typeof mathAI !== 'undefined') {
+                addTestResult('chatbot-tests', 'مثيل البوت الذكي موجود', 'pass');
+                
+                // Test knowledge base
+                if (mathAI.knowledgeBase && mathAI.knowledgeBase.calculus) {
+                    addTestResult('chatbot-tests', 'قاعدة المعرفة محملة', 'pass');
+                } else {
+                    addTestResult('chatbot-tests', 'قاعدة المعرفة غير موجودة', 'fail');
+                }
+                
+                // Test response generation
+                const testResponse = mathAI.generateResponse('مرحبا');
+                if (testResponse && testResponse.length > 0) {
+                    addTestResult('chatbot-tests', 'توليد الردود يعمل', 'pass');
+                } else {
+                    addTestResult('chatbot-tests', 'توليد الردود لا يعمل', 'fail');
+                }
+            } else {
+                addTestResult('chatbot-tests', 'مثيل البوت الذكي غير موجود', 'fail');
+            }
+        }
+        
+        function testLanguages() {
+            clearTestResults('language-tests');
+            
+            // Test translations
+            if (typeof translations !== 'undefined') {
+                addTestResult('language-tests', 'ملف الترجمات موجود', 'pass');
+                
+                if (translations.ar && translations.en) {
+                    addTestResult('language-tests', 'اللغتان العربية والإنجليزية مدعومتان', 'pass');
+                } else {
+                    addTestResult('language-tests', 'إحدى اللغات غير مدعومة', 'fail');
+                }
+            } else {
+                addTestResult('language-tests', 'ملف الترجمات غير موجود', 'fail');
+            }
+            
+            // Test language switching
+            const currentLang = document.documentElement.lang;
+            if (currentLang === 'ar') {
+                addTestResult('language-tests', 'اللغة الافتراضية العربية تعمل', 'pass');
+            } else {
+                addTestResult('language-tests', 'اللغة الافتراضية غير صحيحة', 'fail');
+            }
+        }
+        
+        function testResponsive() {
+            clearTestResults('responsive-tests');
+            
+            // Test viewport meta tag
+            const viewport = document.querySelector('meta[name="viewport"]');
+            if (viewport) {
+                addTestResult('responsive-tests', 'meta viewport موجود', 'pass');
+            } else {
+                addTestResult('responsive-tests', 'meta viewport غير موجود', 'fail');
+            }
+            
+            // Test responsive CSS
+            const testElement = document.createElement('div');
+            testElement.style.cssText = 'width: 100px; height: 100px;';
+            document.body.appendChild(testElement);
+            
+            const rect = testElement.getBoundingClientRect();
+            if (rect.width > 0) {
+                addTestResult('responsive-tests', 'CSS يعمل بشكل صحيح', 'pass');
+            } else {
+                addTestResult('responsive-tests', 'CSS لا يعمل', 'fail');
+            }
+            
+            document.body.removeChild(testElement);
+        }
+        
+        function testPerformance() {
+            clearTestResults('performance-tests');
+            
+            // Test page load time
+            const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+            if (loadTime < 3000) {
+                addTestResult('performance-tests', `وقت التحميل جيد: ${loadTime}ms`, 'pass');
+            } else {
+                addTestResult('performance-tests', `وقت التحميل بطيء: ${loadTime}ms`, 'warning');
+            }
+            
+            // Test service worker
+            if ('serviceWorker' in navigator) {
+                addTestResult('performance-tests', 'Service Worker مدعوم', 'pass');
+            } else {
+                addTestResult('performance-tests', 'Service Worker غير مدعوم', 'warning');
+            }
+            
+            // Test local storage
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                addTestResult('performance-tests', 'Local Storage يعمل', 'pass');
+            } catch (e) {
+                addTestResult('performance-tests', 'Local Storage لا يعمل', 'fail');
+            }
+        }
+        
+        function testSecurity() {
+            clearTestResults('security-tests');
+            
+            // Test HTTPS
+            if (location.protocol === 'https:') {
+                addTestResult('security-tests', 'HTTPS مفعل', 'pass');
+            } else {
+                addTestResult('security-tests', 'HTTPS غير مفعل', 'warning');
+            }
+            
+            // Test CSP
+            const csp = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
+            if (csp) {
+                addTestResult('security-tests', 'Content Security Policy موجود', 'pass');
+            } else {
+                addTestResult('security-tests', 'Content Security Policy غير موجود', 'warning');
+            }
+            
+            // Test XSS protection
+            const xssProtection = document.querySelector('meta[http-equiv="X-XSS-Protection"]');
+            if (xssProtection) {
+                addTestResult('security-tests', 'XSS Protection مفعل', 'pass');
+            } else {
+                addTestResult('security-tests', 'XSS Protection غير مفعل', 'warning');
+            }
+        }
+        
+        function runAllTests() {
+            testDesign();
+            setTimeout(() => testChatbot(), 500);
+            setTimeout(() => testLanguages(), 1000);
+            setTimeout(() => testResponsive(), 1500);
+            setTimeout(() => testPerformance(), 2000);
+            setTimeout(() => testSecurity(), 2500);
+        }
+        
+        function sendTestMessage() {
+            const input = document.getElementById('test-input');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            const messagesContainer = document.getElementById('chatbot-messages');
+            
+            // Add user message
+            const userMsg = document.createElement('div');
+            userMsg.style.cssText = 'background: var(--primary-color); color: white; padding: 0.5rem; margin: 0.5rem; border-radius: 10px; text-align: left;';
+            userMsg.textContent = message;
+            messagesContainer.appendChild(userMsg);
+            
+            // Generate AI response
+            if (typeof mathAI !== 'undefined') {
+                const response = mathAI.generateResponse(message);
+                
+                const botMsg = document.createElement('div');
+                botMsg.style.cssText = 'background: var(--bg-secondary); color: var(--text-primary); padding: 0.5rem; margin: 0.5rem; border-radius: 10px; text-align: right;';
+                botMsg.textContent = response;
+                messagesContainer.appendChild(botMsg);
+            }
+            
+            input.value = '';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            setTimeout(runAllTests, 1000);
+        });
+    </script>
+</body>
+</html> 

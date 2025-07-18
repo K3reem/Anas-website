@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تقدمك في التعلم</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { font-family: 'Cairo', Arial, sans-serif; background: #f9f9f9; }
+    .container { max-width: 400px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px #0001; padding: 32px; }
+    .progress-bar { background: #eee; border-radius: 8px; overflow: hidden; height: 24px; margin-bottom: 16px; }
+    .progress-bar-inner { background: #4caf50; height: 100%; color: #fff; text-align: center; line-height: 24px; transition: width 0.5s; }
+    .hidden { display: none; }
+    .btn { background: #1976d2; color: #fff; border: none; padding: 10px 24px; border-radius: 6px; cursor: pointer; font-size: 1rem; }
+    .btn:hover { background: #125ea2; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>تقدمك في التعلم</h2>
+    <div id="login-section" class="">
+      <p>يجب تسجيل الدخول لعرض تقدمك.</p>
+      <input type="text" id="username" placeholder="الاسم الكامل" style="width:100%;margin-bottom:8px;">
+      <input type="email" id="email" placeholder="البريد الإلكتروني" style="width:100%;margin-bottom:8px;">
+      <button class="btn" onclick="login()">تسجيل الدخول</button>
+    </div>
+    <div id="progress-section" class="hidden">
+      <p><b>الاسم:</b> <span id="display-name"></span></p>
+      <p><b>البريد الإلكتروني:</b> <span id="display-email"></span></p>
+      <p><b>تاريخ إنشاء الحساب:</b> <span id="display-date"></span></p>
+      <hr>
+      <p><b>عدد الدروس التي تابعتها:</b> <span id="lessons-done"></span></p>
+      <p><b>عدد الاختبارات المنجزة:</b> <span id="quizzes-done"></span></p>
+      <div class="progress-bar">
+        <div class="progress-bar-inner" id="progress-bar-inner">0%</div>
+      </div>
+      <button class="btn" onclick="logout()">تسجيل الخروج</button>
+    </div>
+  </div>
+  <script>
+    // بيانات افتراضية للتقدم
+    const defaultProgress = {
+      lessonsDone: 7,
+      totalLessons: 10,
+      quizzesDone: 3,
+      totalQuizzes: 5
+    };
+
+    function login() {
+      const name = document.getElementById('username').value.trim();
+      const email = document.getElementById('email').value.trim();
+      if (!name || !email) {
+        alert('يرجى إدخال الاسم والبريد الإلكتروني');
+        return;
+      }
+      const createdAt = new Date().toLocaleDateString('ar-EG');
+      localStorage.setItem('user', JSON.stringify({ name, email, createdAt }));
+      localStorage.setItem('progress', JSON.stringify(defaultProgress));
+      showProgress();
+    }
+
+    function logout() {
+      localStorage.removeItem('user');
+      localStorage.removeItem('progress');
+      showLogin();
+    }
+
+    function showProgress() {
+      let user, progress;
+      try {
+        user = JSON.parse(localStorage.getItem('user'));
+        progress = JSON.parse(localStorage.getItem('progress')) || defaultProgress;
+      } catch (e) {
+        user = null;
+        progress = defaultProgress;
+      }
+      if (!user || !user.name || !user.email || !user.createdAt) {
+        showLogin();
+        return;
+      }
+      document.getElementById('login-section').classList.add('hidden');
+      document.getElementById('progress-section').classList.remove('hidden');
+      document.getElementById('display-name').textContent = user.name;
+      document.getElementById('display-email').textContent = user.email;
+      document.getElementById('display-date').textContent = user.createdAt;
+      document.getElementById('lessons-done').textContent = `${progress.lessonsDone} من ${progress.totalLessons}`;
+      document.getElementById('quizzes-done').textContent = `${progress.quizzesDone} من ${progress.totalQuizzes}`;
+      const percent = Math.round(((progress.lessonsDone + progress.quizzesDone) / (progress.totalLessons + progress.totalQuizzes)) * 100);
+      document.getElementById('progress-bar-inner').style.width = percent + '%';
+      document.getElementById('progress-bar-inner').textContent = percent + '%';
+    }
+
+    function showLogin() {
+      document.getElementById('login-section').classList.remove('hidden');
+      document.getElementById('progress-section').classList.add('hidden');
+    }
+
+    // عند تحميل الصفحة
+    window.onload = function() {
+      const user = localStorage.getItem('user');
+      if (user) {
+        showProgress();
+      } else {
+        showLogin();
+      }
+    };
+  </script>
+</body>
+</html> 
