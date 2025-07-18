@@ -481,8 +481,9 @@
             <div class="chatbot-input">
                 <div class="input-actions">
                     <div class="file-upload">
-                        <input type="file" id="fileUpload" accept="image/*,.pdf,.doc,.docx" style="display: none;">
-                        <button class="upload-btn" onclick="document.getElementById('fileUpload').click()">
+                        <input type="file" id="fileInput" multiple />
+                        <button id="uploadButton"></point>
+                        <div id="filePreview" style="margin:8px 0"></div>
                             <i class="fas fa-paperclip"></i>
                         </button>
                     </div>
@@ -786,17 +787,7 @@
           <option value="graduate">خريج</option>
         </select>
       </div>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>الملف الشخصي</title>
-      <link rel="stylesheet" href="styles.css" />
-    </head>
-    <body>
-      <section class="profile-container">
-        <h2 id="profile-name">—</h2>
-        <p><strong>البريد الإلكتروني:</strong> <span id="profile-email">—</span></p>
-        <p><strong>تاريخ إنشاء الحساب:</strong> <span id="profile-date">—</span></p>
-      </section>
+  
       <div class="form-group">
         <label>تاريخ إنشاء الحساب</label>
         <input type="text" id="profileDateField" disabled />

@@ -221,15 +221,34 @@ function initializeGeminiChatbot() {
     // أضف رسالة ترحيبية تلقائية عند فتح الشات
     addMessage('bot', 'هلا! أنا المعلم الذكي 😊 كيف يمكنني مساعدتك في الرياضيات؟');
 
-    async function sendToGemini(userMessage, fileData = null) {
+    // دالة مساعدة للتحقق من منطقية الرد
+    function isValidGeminiResponse(response) {
+        if (!response) return false;
+        const genericPhrases = [
+            'أنا هنا لمساعدتك',
+            'كيف يمكنني مساعدتك',
+            'يرجى توضيح السؤال',
+            'لم أفهم',
+            'عذراً',
+            'لا أستطيع',
+            'أحتاج مزيدًا من التفاصيل',
+            'يرجى إعادة صياغة السؤال'
+        ];
+        if (response.length < 10) return false;
+        for (let phrase of genericPhrases) {
+            if (response.includes(phrase)) return false;
+        }
+        return true;
+    }
+
+    // عدل دالة sendToGemini لتعيد المحاولة تلقائياً إذا كان الرد غير منطقي
+    async function sendToGemini(userMessage, fileData = null, retryCount = 0) {
         try {
             let requestBody = {
                 contents: [{
                     parts: [{ text: userMessage }]
                 }]
             };
-
-            // If file is uploaded, add it to the request
             if (fileData) {
                 if (fileData.type.startsWith('image/')) {
                     const imagePrompt = userMessage || `اقرأ الصورة بدقة. اكتب التكامل أو المعادلة كما هي مكتوبة في الصورة بالضبط. ثم اكتب الحل باختصار شديد. مثال: "التكامل: ∫₀¹ (x² - 8x) dx" ثم "الحل: -11/3" فقط.`;
@@ -244,8 +263,6 @@ function initializeGeminiChatbot() {
                     requestBody.contents[0].parts[0].text += `\n\nملف مرفق: ${fileData.name} (${fileData.type})`;
                 }
             }
-
-            // إرسال الطلب مع المفتاح في الهيدر
             const res = await fetch(GEMINI_API_URL, {
                 method: 'POST',
                 headers: {
@@ -255,8 +272,9 @@ function initializeGeminiChatbot() {
                 body: JSON.stringify(requestBody)
             });
             const data = await res.json();
+            let responseText = '';
             if (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
-                return data.candidates[0].content.parts.map(p => p.text).join('\n');
+                responseText = data.candidates[0].content.parts.map(p => p.text).join('\n');
             } else if (data.error && data.error.message) {
                 console.error('Gemini API error:', data.error);
                 return 'حدث خطأ أثناء معالجة الطلب. يرجى المحاولة لاحقاً.';
@@ -264,6 +282,16 @@ function initializeGeminiChatbot() {
                 console.error('Unexpected Gemini API response:', data);
                 return 'لم أستطع معالجة الرد من Gemini API.';
             }
+            // تحقق من منطقية الرد، إذا لم يكن منطقياً أعد المحاولة حتى 3 مرات
+            if (!isValidGeminiResponse(responseText) && retryCount < 3) {
+                console.warn('رد غير منطقي، إعادة المحاولة...', {responseText, retryCount});
+                await new Promise(r => setTimeout(r, 800)); // انتظر قليلاً قبل إعادة المحاولة
+                return await sendToGemini(userMessage, fileData, retryCount + 1);
+            }
+            if (!isValidGeminiResponse(responseText)) {
+                return 'عذراً، لم أتمكن من فهم سؤالك أو حل المسألة بدقة. حاول إعادة صياغة السؤال أو أرسل صورة أو تفاصيل أوضح.';
+            }
+            return responseText;
         } catch (e) {
             console.error('Fetch or processing error:', e);
             return 'حدث خطأ في الاتصال أو المعالجة. تحقق من الكونسول.';
@@ -362,15 +390,36 @@ function initializeGeminiChatbot() {
     }
 }
 
-// Helper function to convert file to base64
+// تحويل الملف إلى base64
 function fileToBase64(file) {
     return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = err => reject(err);
+      reader.readAsDataURL(file);
     });
-}
+  }
+  
+  uploadButton.addEventListener('click', async () => {
+    const files = fileInput.files;
+    for (let file of files) {
+      try {
+        const url = await fileToBase64(file);
+        // ترسل رسالة للمستخدم مع المعطيات التالية للعرض
+        addMessage('user', '', {
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          url: url
+        });
+        // هنا ممكن تبعت url للبوت أو السيرفر حسب تصميمك
+        await handleSend({ name: file.name, type: file.type, size: file.size, url });
+      } catch (e) {
+        console.error('خطأ في قراءة الملف:', e);
+      }
+    }
+    fileInput.value = ''; // تفريغ الاختيار
+  });  
 
 // ====== دوال أزرار التنقل ======
 function openSettings() {
@@ -421,22 +470,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // ====== عرض بيانات المستخدم في الملف الشخصي ======
   function renderProfile() {
-    const nameEl  = document.getElementById('profile-name');
-    const emailEl = document.getElementById('profile-email');
-    const dateEl  = document.getElementById('profile-date');
+    const nameEl  = document.getElementById('profilename');
+    const emailEl = document.getElementById('profileemail');
+    const dateEl  = document.getElementById('profiledate');
     const raw     = localStorage.getItem('currentUser');
     const user    = raw ? JSON.parse(raw) : null;
   
+    // أضف تحقق قبل التعيين
     if (user) {
-      nameEl.textContent  = user.name;
-      emailEl.textContent = user.email;
-      dateEl.textContent  = new Date(user.createdAt)
-                               .toLocaleDateString('ar-EG');
+      if (nameEl)  nameEl.textContent  = user.name;
+      if (emailEl) emailEl.textContent = user.email;
+      if (dateEl)  dateEl.textContent  = new Date(user.createdAt).toLocaleDateString('ar-EG');
     } else {
-      // بيانات تجريبية لو ما في user
-      nameEl.textContent  = 'اسم عربي تجريبي';
-      emailEl.textContent = 'test@example.com';
-      dateEl.textContent  = new Date().toLocaleDateString('ar-EG');
+      if (nameEl)  nameEl.textContent  = 'اسم عربي تجريبي';
+      if (emailEl) emailEl.textContent = 'test@example.com';
+      if (dateEl)  dateEl.textContent  = new Date().toLocaleDateString('ar-EG');
     }
   }
   renderProfile();  
@@ -469,3 +517,31 @@ function getNotificationIcon(type) {
     };
     return icons[type] || icons.info;
 }
+
+ddocument.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('fileInput');
+    const filePreview = document.getElementById('filePreview');
+    if (!fileInput || !filePreview) return;
+  
+    fileInput.addEventListener('change', function(event) {
+      const files = Array.from(event.target.files);
+      filePreview.innerHTML = '';
+      files.forEach(file => {
+        if (file.type.startsWith('image/')) {
+          const img = document.createElement('img');
+          img.src = URL.createObjectURL(file);
+          img.style.maxWidth = '80px';
+          img.style.maxHeight = '80px';
+          img.alt = file.name;
+          img.style.marginLeft = '8px';
+          filePreview.appendChild(img);
+        } else {
+          const icon = document.createElement('span');
+          icon.textContent = '📄';
+          icon.style.marginLeft = '4px';
+          filePreview.appendChild(icon);
+          filePreview.appendChild(document.createTextNode(' ' + file.name));
+        }
+      });
+    });
+  });
