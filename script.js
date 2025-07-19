@@ -450,6 +450,9 @@ function updateUserUI() {
         // Bind dropdown events
         bindDropdownEvents();
         
+        // Show progress section when logged in
+        toggleProgressSection();
+        
     } else {
         // User is not logged in - show login button
         userBtn.classList.remove('logged-in');
@@ -465,6 +468,18 @@ function updateUserUI() {
         
         // Set user button to open login modal
         userBtn.onclick = showLoginModal;
+
+        // Hide progress section when not logged in
+        toggleProgressSection();
+    }
+}
+function toggleProgressSection() {
+    const progressSection = document.getElementById('progress');
+    if (!progressSection) return;
+    if (isUserLoggedIn()) {
+        progressSection.style.display = '';
+    } else {
+        progressSection.style.display = 'none';
     }
 }
 
@@ -634,6 +649,7 @@ function handleLogin(event) {
     const loginValue = loginInput.value.trim();
     const password = passwordInput.value;
     
+    // تحقق من الحقول المطلوبة فقط
     if (!loginValue || !password) {
         showNotification('يرجى تعبئة جميع الحقول', 'error');
         return;
@@ -942,80 +958,115 @@ function handleToLoginClick(e) {
 }
 
 function handleRegister(event) {
-    console.log('handleRegister function called');
     event.preventDefault();
-
+    
+    // جلب العناصر مباشرة من document
     const nameInput = document.getElementById('registerName');
     const emailInput = document.getElementById('registerEmail');
     const passwordInput = document.getElementById('registerPassword');
     const confirmInput = document.getElementById('registerConfirmPassword');
 
-    const name = nameInput.value.trim();
-    const email = emailInput.value.trim().toLowerCase();
-    const password = passwordInput.value;
-    const confirm = confirmInput.value;
-
-    if (!name || !email || !password || !confirm) {
+    // تحقق من وجود جميع العناصر
+    if (!nameInput || !emailInput || !passwordInput || !confirmInput) {
+        console.error('عناصر الإدخال مفقودة:', { 
+            nameInput: !!nameInput, 
+            emailInput: !!emailInput, 
+            passwordInput: !!passwordInput, 
+            confirmInput: !!confirmInput 
+        });
         showNotification('يرجى تعبئة جميع الحقول', 'error');
         return;
     }
 
-    if (password !== confirm) {
+    // قراءة القيم مع معالجة آمنة
+    const name = (nameInput.value || '').trim();
+    const email = (emailInput.value || '').trim().toLowerCase();
+    const password = (passwordInput.value || '').trim();
+    const confirmPassword = (confirmInput.value || '').trim();
+
+    console.log('القيم المدخلة:', { name, email, password: password ? '***' : '', confirmPassword: confirmPassword ? '***' : '' });
+
+    // تحقق من جميع الحقول المطلوبة
+    if (!name || !email || !password || !confirmPassword) {
+        showNotification('يرجى تعبئة جميع الحقول', 'error');
+        return;
+    }
+
+    // تحقق من تطابق كلمتي المرور
+    if (password !== confirmPassword) {
         showNotification('كلمتا المرور غير متطابقتين', 'error');
         return;
     }
 
-    const users = getUsers();
-    if (users.find(u => u.email === email)) {
-        showNotification('البريد الإلكتروني مستخدم بالفعل', 'error');
+    // تحقق من صحة البريد الإلكتروني
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showNotification('يرجى إدخال بريد إلكتروني صحيح', 'error');
         return;
     }
 
-    if (users.find(u => u.username === name)) {
-        showNotification('اسم المستخدم مستخدم بالفعل', 'error');
-        return;
-    }
-    
-    const user = { 
-        username: name, 
-        email, 
-        password, 
-        achievements: [], 
-        watchedVideos: [], 
-        lastWatched: null,
-        gradeLevel: '',
-        profilePicture: '',
-        createdAt: new Date().toISOString(),
-        lastActivity: new Date().toISOString(),
-        settings: {
-            theme: 'light',
-            emailNotifications: true,
-            pushNotifications: true
+    try {
+        // تحقق من عدم تكرار البريد الإلكتروني
+        const users = getUsers();
+        if (users.some(u => u.email === email)) {
+            showNotification('البريد الإلكتروني مستخدم بالفعل', 'error');
+            return;
         }
-    };
-    users.push(user);
-    saveUsers(users);
-    
-    // Clear form fields first
-    nameInput.value = '';
-    emailInput.value = '';
-    passwordInput.value = '';
-    confirmInput.value = '';
-    
-    // Set user session
-    setCurrentUser(user);
-    
-    // Close modal
-    closeRegisterModal();
-    
-    // Update UI
-    updateUserUI();
-    
-    // Show success message
-    showNotification('تم إنشاء الحساب وتسجيل الدخول', 'success');
-    
-    console.log('Registration successful:', user.username);
-    console.log('Session stored:', isUserLoggedIn());
+
+        // تحقق من عدم تكرار اسم المستخدم
+        if (users.some(u => u.username === name)) {
+            showNotification('اسم المستخدم مستخدم بالفعل', 'error');
+            return;
+        }
+
+        // إنشاء المستخدم الجديد
+        const user = {
+            username: name,
+            email: email,
+            password: password,
+            achievements: [],
+            watchedVideos: [],
+            lastWatched: null,
+            gradeLevel: '',
+            profilePicture: '',
+            createdAt: new Date().toISOString(),
+            lastActivity: new Date().toISOString(),
+            settings: {
+                theme: 'light',
+                emailNotifications: true,
+                pushNotifications: true
+            }
+        };
+
+        // حفظ المستخدم
+        users.push(user);
+        saveUsers(users);
+
+        // مسح الحقول
+        nameInput.value = '';
+        emailInput.value = '';
+        passwordInput.value = '';
+        confirmInput.value = '';
+
+        // تسجيل الدخول تلقائياً
+        setCurrentUser(user);
+        
+        // إغلاق المودال وتحديث الواجهة
+        if (typeof closeRegisterModal === 'function') {
+            closeRegisterModal();
+        }
+        
+        if (typeof updateUserUI === 'function') {
+            updateUserUI();
+        }
+        
+        showNotification('تم إنشاء الحساب وتسجيل الدخول بنجاح', 'success');
+        console.log('Registration successful:', user.username);
+        
+    } catch (error) {
+        console.error('خطأ في إنشاء الحساب:', error);
+        showNotification('حدث خطأ أثناء إنشاء الحساب. يرجى المحاولة مرة أخرى.', 'error');
+    }
 }
 
 // تسجيل الخروج
@@ -2737,5 +2788,13 @@ window.showProfileModal = function () {
   
     document.getElementById('profileModal')?.classList.add('show');
 };
+
+// ربط دالة التسجيل بحدث submit على الفورم
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('registerForm');
+    if (form) {
+        form.addEventListener('submit', handleRegister);
+    }
+});
   
   
