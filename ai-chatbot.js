@@ -1,5 +1,6 @@
 // ضع مفتاح Gemini API هنا مباشرة
-const GEMINI_API_KEY = 'AIzaSyCXAbT1CJao4spicXn5Ebpkaohod6zZ4E0';
+require('dotenv').config();           // يحمّل متغيّرات .env
+const apiKey = process.env.API_KEY;   // يقرأ المفتاح من .env
 
 const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent';
 
